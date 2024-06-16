@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+    paths:
+      - patches.flp
+      - Plugin_FlexiblePatcher/**
+permissions:
+  contents: write
+concurrency:
+  group: CI
+  cancel-in-progress: true
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: FlexiblePatcher
+      - uses: actions/checkout@v4
+        with:
+          repository: FlexiblePatcher/tools
+          path: tools
+      - uses: microsoft/setup-msbuild@v2
+      - run: |
+          foreach ($entry in @{file = 'VS2010Express1.iso'; installer = 'VCExpress\setup.exe'}, @{file = 'VS2010SP1dvd1.iso'; installer = 'Setup.exe'}) {
+            $path = Join-Path -Path ${{ runner.temp }} -ChildPath $entry.file
+            Invoke-WebRequest -OutFile $path -Uri "https://github.com/FlexiblePatcher/VS2010/releases/latest/download/$($entry.file)"
+            $drive = (Mount-DiskImage -ImagePath $path -PassThru | Get-Volume).DriveLetter
+            Start-Process -FilePath "${drive}:\$($entry.installer)" -ArgumentList '/q /norestart' -Wait
+            Dismount-DiskImage -ImagePath $path | Out-Null
+          }
+          py tools\synthesize.py FlexiblePatcher\patches.flp FlexiblePatcher\Plugin_FlexiblePatcher\source\plugin_patcher FlexiblePatcher\patches.flp
+          msbuild /v:m /t:Rebuild /p:Configuration=Release /p:PlatformToolset=v100 FlexiblePatcher\Plugin_FlexiblePatcher\source\plugin_patcher\PlugIn_trng.sln
+          Copy-Item -Path FlexiblePatcher\Plugin_FlexiblePatcher\source\plugin_patcher\Release\Plugin_FlexiblePatcher.dll -Destination FlexiblePatcher\Plugin_FlexiblePatcher
+          Remove-Item -Path FlexiblePatcher\Plugin_FlexiblePatcher\source\plugin_patcher\Release -Recurse
+          Set-Content -Path FlexiblePatcher\Plugin_FlexiblePatcher\Plugin_FlexiblePatcher.btn -Value 'NAME#Flexible Patcher plugin, version ${{ github.run_number }}.0.0.0'
+          Compress-Archive -Path FlexiblePatcher\Plugin_FlexiblePatcher\* -DestinationPath FlexiblePatcher\Plugin_FlexiblePatcher.zip
+          Compress-Archive -Path FlexiblePatcher\patches.flp, FlexiblePatcher\Plugin_FlexiblePatcher.zip -DestinationPath FlexiblePatcher\Version.${{ github.run_number }}.zip
+          $body = git -C FlexiblePatcher show -s --format=%b
+          $release = (curl --no-progress-meter -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' -H 'X-GitHub-Api-Version: 2022-11-28' -d "{""tag_name"": ""${{ github.run_number }}"", ""name"": ""Version ${{ github.run_number }}"", ""body"": ""${body}""}" 'https://api.github.com/repos/FlexiblePatcher/test/releases' | ConvertFrom-Json).id
+          curl --no-progress-meter -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Content-Type: application/octet-stream' --data-binary '@FlexiblePatcher\Version.${{ github.run_number }}.zip' "https://uploads.github.com/repos/FlexiblePatcher/test/releases/${release}/assets?name=Version.${{ github.run_number }}.zip" | Out-Null
