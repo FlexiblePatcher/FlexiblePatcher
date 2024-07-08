@@ -1,4 +1,4 @@
-name: CI
+name: CD
 on:
   push:
     paths:
@@ -7,7 +7,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: CI
+  group: CD
   cancel-in-progress: true
 jobs:
   publish:
@@ -37,5 +37,5 @@ jobs:
           Compress-Archive -Path FlexiblePatcher\Plugin_FlexiblePatcher\* -DestinationPath FlexiblePatcher\Plugin_FlexiblePatcher.zip
           Compress-Archive -Path FlexiblePatcher\patches.flp, FlexiblePatcher\Plugin_FlexiblePatcher.zip -DestinationPath FlexiblePatcher\Version.${{ github.run_number }}.zip
           $body = git -C FlexiblePatcher show -s --format=%b
-          $release = (curl --no-progress-meter -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' -H 'X-GitHub-Api-Version: 2022-11-28' -d "{""tag_name"": ""${{ github.run_number }}"", ""name"": ""Version ${{ github.run_number }}"", ""body"": ""${body}""}" 'https://api.github.com/repos/FlexiblePatcher/test/releases' | ConvertFrom-Json).id
-          curl --no-progress-meter -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Content-Type: application/octet-stream' --data-binary '@FlexiblePatcher\Version.${{ github.run_number }}.zip' "https://uploads.github.com/repos/FlexiblePatcher/test/releases/${release}/assets?name=Version.${{ github.run_number }}.zip" | Out-Null
+          $release = (curl --no-progress-meter -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' -H 'X-GitHub-Api-Version: 2022-11-28' -d "{""tag_name"": ""${{ github.run_number }}"", ""name"": ""Version ${{ github.run_number }}"", ""body"": ""${body}""}" 'https://api.github.com/repos/FlexiblePatcher/FlexiblePatcher/releases' | ConvertFrom-Json).id
+          curl --no-progress-meter -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Content-Type: application/octet-stream' --data-binary '@FlexiblePatcher\Version.${{ github.run_number }}.zip' "https://uploads.github.com/repos/FlexiblePatcher/FlexiblePatcher/releases/${release}/assets?name=Version.${{ github.run_number }}.zip" | Out-Null
