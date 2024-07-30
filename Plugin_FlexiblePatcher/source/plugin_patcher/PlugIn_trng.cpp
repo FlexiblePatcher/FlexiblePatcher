@@ -731,6 +731,10 @@ void ApplyPatches(void)
 		MessageBox(NULL, "The game can't start because patches.fpd is missing. Try copying the data file to fix this problem.", "TRNG Engine", MB_OK);
 		TerminateProcess(GetCurrentProcess(), 0);
 	}
+	if (!GetFileSize(Blob, NULL)) {
+		MessageBox(NULL, "The game can't start because patches.fpd is empty. Try repatching the data file to fix this problem.", "TRNG Engine", MB_OK);
+		TerminateProcess(GetCurrentProcess(), 0);
+	}
 	ReadFile(Blob, &version, 2, &Bytes, NULL);
 	ReadFile(Blob, patch_selected, patch_selected_size, &Bytes, NULL);
 	ReadFile(Blob, parameter_buffer, parameter_buffer_size, &Bytes, NULL);
