@@ -91,6 +91,7 @@ char TexMyPluginName[80];
 StrMyData MyData;
 
 int *const Target = (int *) 0x4A6CC4;
+const WORD TrngVersion[4] = {1, 3, 0, 7};
 
 StrHeap Heap;
 
@@ -703,6 +704,9 @@ bool InitializeAll(void)
 	CALL_CHECK(RequireMyCallBacks)
 
 	// TYPE_HERE: code to allocate global resource to use in the whole game
+
+	if (CompareTrngVersion((WORD *) TrngVersion))
+		return false;
 
 	Inject();
 
