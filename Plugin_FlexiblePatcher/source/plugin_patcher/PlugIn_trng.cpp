@@ -184,6 +184,11 @@ void cbInitProgram(int NumberLoadedPlugins, char *VetPluginNames[])
 
 	// clear all my global variables
 	ClearMemory(&MyData, sizeof(StrMyData));
+
+	Heap.Pointer = NULL;
+	Heap.Size = 0;
+	pBaseVariableTRNG = Trng.pGlobTomb4->pBaseVariableTRNG;
+	pPatchMap = (uchar *) patch_selected;
 }
 
 
@@ -192,10 +197,6 @@ void cbInitGame(void)
 	// here you can initialize your global data for whole adventure
 	// this procedure will be called only once, before loading title level
 
-	Heap.Pointer = NULL;
-	Heap.Size = 0;
-	pBaseVariableTRNG = Trng.pGlobTomb4->pBaseVariableTRNG;
-	pPatchMap = (uchar *) patch_selected;
 	pcbInitGame();
 }
 
