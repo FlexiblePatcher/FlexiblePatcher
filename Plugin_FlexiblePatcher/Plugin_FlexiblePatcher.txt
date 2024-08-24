@@ -83,3 +83,14 @@ To exit the game:
 #define @Plugin_FlexiblePatcher 1
 TriggerGroup=<TriggerGroupId>,$012000,9,$0
 #define @plugins CLEAR
+
+Old style trapdoors
+===================
+
+Provides the trapdoors from TR1/2/3.
+
+To assign a slot:
+
+AssignSlot=<MyUsedSlot>,<Trapdoor>
+
+Where <Trapdoor> is OBJ_FLEP_TRAPDOOR{1..16}.
