@@ -188,7 +188,7 @@ void cbInitProgram(int NumberLoadedPlugins, char *VetPluginNames[])
 	Heap.Pointer = NULL;
 	Heap.Size = 0;
 	pBaseVariableTRNG = Trng.pGlobTomb4->pBaseVariableTRNG;
-	pPatchMap = (uchar *) patch_selected;
+	pPatchMap = (uchar *) 0x812000;
 }
 
 
@@ -752,6 +752,7 @@ void ApplyPatches(void)
 		}
 		TerminateProcess(GetCurrentProcess(), 0);
 	}
+	memcpy((void *) 0x812000, patch_selected, patch_selected_size);
 	memset((void *) 0x814000, 0xCC, 0x100000);
 	for (Number = 0; Number < patch_selected_size; ++Number) {
 		if (patch_selected[Number]) {
